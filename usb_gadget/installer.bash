@@ -39,23 +39,23 @@ uninstall () {
     sed -i '/dwc2/d' /etc/modules
     sed -i '/libcomposite/d' /etc/modules
     sed -i '/init_usb_gadget/d' /etc/rc.local
-    ask_reboot
+    #ask_reboot
 }
 
 check_root
 if [ -f "/usr/bin/init_usb_gadget" ]; then
     echo "Looks like usb gadget already instaled"
-    read -p "Do you want to uninstall it? (Y/n) " yn </dev/tty
-    case $yn in
-        [Yy]* )
+    #read -p "Do you want to uninstall it? (Y/n) " yn </dev/tty
+    #case $yn in
+    #    [Yy]* )
             uninstall
             echo "Done uninstalling usb gadget. you should reboot now."    
-            ask_reboot; break;;
-        [Nn]* ) exit 0;;
-        * ) echo "Please answer yes or no.";;
-    esac
+    #        ask_reboot; break;;
+    #    [Nn]* ) exit 0;;
+    #    * ) echo "Please answer yes or no.";;
+    #esac
 else
     install
     echo "Installed usb gadget, You should reboot now"
-    ask_reboot
+    #ask_reboot
 fi

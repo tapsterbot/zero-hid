@@ -189,6 +189,16 @@ echo "Config ${CONFIG_INDEX}: ECM network" > "${CONFIGS_STRINGS_DIR}/configurati
 ln -s "$KEYBOARD_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 ln -s "$MOUSE_RELATIVE_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 ln -s "$MOUSE_ABSOLUTE_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
+
+# Ethernet
+mkdir -p functions/ecm.usb0
+# first byte of address must be even
+HOST="48:6f:73:74:50:43" # "HostPC"
+SELF="42:61:64:55:53:42" # "BadUSB"
+echo $HOST > functions/ecm.usb0/host_addr
+echo $SELF > functions/ecm.usb0/dev_addr
+ln -s functions/ecm.usb0 configs/c.1/
+
 ls /sys/class/udc > UDC
 
 chmod 777 /dev/hidg0 # Keyboard

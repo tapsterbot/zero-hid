@@ -177,6 +177,70 @@ echo -ne \\xC0           # END_COLLECTION
 } >> "$D"
 cp "$D" "${MOUSE_ABSOLUTE_FUNCTIONS_DIR}/report_desc"
 
+# Touch
+TOUCH_FUNCTIONS_DIR="functions/hid.touch"
+mkdir -p "$TOUCH_FUNCTIONS_DIR"
+echo 0 > "${TOUCH_FUNCTIONS_DIR}/protocol"
+echo 0 > "${TOUCH_FUNCTIONS_DIR}/subclass"
+echo 7 > "${TOUCH_FUNCTIONS_DIR}/report_length"
+# Write the report descriptor
+D=$(mktemp)
+{
+echo -ne \\x05\\x0D       # USAGE_PAGE(Digitizers)
+echo -ne \\x09\\x04       # USAGE (Touch Screen)
+echo -ne \\xA1\\x01       # COLLECTION(Application)
+
+# Define the maximum amount of fingers that the device supports
+echo -ne \\x09\\x55       #   USAGE (Contact Count Maximum)
+echo -ne \\x25\\x0A       #   LOGICAL_MAXIMUM (CONTACT_COUNT_MAXIMUM)  "10 (0xa)"
+echo -ne \\xB1\\x02       #   FEATURE (Data,Var,Abs)
+
+# Define the actual amount of fingers that are concurrently touching the screen
+echo -ne \\x09\\x54       #   USAGE (Contact count)
+echo -ne \\x95\\x01       #   REPORT_COUNT(1)
+echo -ne \\x75\\x08       #   REPORT_SIZE (8)
+echo -ne \\x81\\x02       #   INPUT (Data,Var,Abs)
+
+# Declare a finger collection
+echo -ne \\x09\\x22       #   USAGE (Finger)
+echo -ne \\xA1\\x02       #   COLLECTION (Logical)
+
+# Declare an identifier for the finger
+echo -ne \\x09\\x51       #     USAGE (Contact Identifier)
+echo -ne \\x75\\x08       #     REPORT_SIZE (8)
+echo -ne \\x95\\x01       #     REPORT_COUNT (1)
+echo -ne \\x81\\x02       #     INPUT (Data,Var,Abs)
+
+# Declare Tip Switch and In Range
+echo -ne \\x09\\x42       #     USAGE (Tip Switch)
+echo -ne \\x09\\x32       #     USAGE (In Range)
+echo -ne \\x15\\x00       #     LOGICAL_MINIMUM (0)
+echo -ne \\x25\\x01       #     LOGICAL_MAXIMUM (1)
+echo -ne \\x75\\x01       #     REPORT_SIZE (1)
+echo -ne \\x95\\x02       #     REPORT_COUNT(2)
+echo -ne \\x81\\x02       #     INPUT (Data,Var,Abs)
+
+# Declare the remaining 6 bits of the first data byte as constant -> the driver will ignore them
+echo -ne \\x95\\x06       #     REPORT_COUNT (6)
+echo -ne \\x81\\x03       #     INPUT (Cnst,Ary,Abs)
+
+# Define absolute X and Y coordinates of 16 bit each (percent values multiplied with 100)
+echo -ne \\x05\\x01       #     USAGE_PAGE (Generic Desktop)
+echo -ne \\x09\\x30       #     Usage (X)
+echo -ne \\x09\\x31       #     Usage (Y)
+echo -ne \\x16\\x00\\x00  #     Logical Minimum (0)
+echo -ne \\x26\\x10\\x27  #     Logical Maximum (10000)
+echo -ne \\x36\\x00\\x00  #     Physical Minimum (0)
+echo -ne \\x46\\x10\\x27  #     Physical Maximum (10000)
+echo -ne \\x66\\x00\\x00  #     UNIT (None)
+echo -ne \\x75\\x10       #     Report Size (16),
+echo -ne \\x95\\x02       #     Report Count (2),
+echo -ne \\x81\\x02       #     Input (Data,Var,Abs)
+echo -ne \\xC0            #   END_COLLECTION
+echo -ne \\xC0            # END_COLLECTION
+} >> "$D"
+cp "$D" "${TOUCH_FUNCTIONS_DIR}/report_desc"
+
 CONFIG_INDEX=1
 CONFIGS_DIR="configs/c.${CONFIG_INDEX}"
 mkdir -p "$CONFIGS_DIR"
@@ -189,6 +253,7 @@ echo "Config ${CONFIG_INDEX}: ECM network" > "${CONFIGS_STRINGS_DIR}/configurati
 ln -s "$KEYBOARD_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 ln -s "$MOUSE_RELATIVE_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 ln -s "$MOUSE_ABSOLUTE_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
+ln -s "$TOUCH_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 
 # Ethernet
 mkdir -p functions/ecm.usb0
@@ -204,4 +269,5 @@ ls /sys/class/udc > UDC
 chmod 777 /dev/hidg0 # Keyboard
 chmod 777 /dev/hidg1 # Mouse Relative
 chmod 777 /dev/hidg2 # Mouse Absolute
+chmod 777 /dev/hidg3 # Touch
 

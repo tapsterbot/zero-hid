@@ -13,8 +13,21 @@ set -u
 
 modprobe libcomposite
 
-# https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/
+# Calculate MAC addresses
+# https://github.com/thagrol/Guides/blob/main/ethernet-configfs.sh
+SERIAL=`cat /proc/cpuinfo | grep Serial | cut -d ' ' -f 2` # Pi's serial number
+HOSTPREFIX="34"     # hex, two digits only
+DEVICEPREFIX="06"   # hex, two digits only
+BASEMAC=""
 
+PADDED='00000000000000'$SERIAL
+for i in -10 -8 -6 -4 -2; do
+    BASEMAC=$BASEMAC':'${PADDED: $i:2}
+done
+HOSTMAC=$HOSTPREFIX$BASEMAC
+DEVMAC=$DEVICEPREFIX$BASEMAC
+
+# https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/
 
 cd /sys/kernel/config/usb_gadget/
 mkdir -p g1
@@ -257,11 +270,8 @@ ln -s "$TOUCH_FUNCTIONS_DIR" "${CONFIGS_DIR}/"
 
 # Ethernet
 mkdir -p functions/ecm.usb0
-# first byte of address must be even
-HOST="12:22:33:44:55:66" # "connected phone"
-SELF="16:22:33:44:55:66" # "Valet"
-echo $HOST > functions/ecm.usb0/host_addr
-echo $SELF > functions/ecm.usb0/dev_addr
+echo $HOSTMAC > functions/ecm.usb0/host_addr # "Connected Device"
+echo $DEVMAC > functions/ecm.usb0/dev_addr # "Tapster Valet"
 ln -s functions/ecm.usb0 configs/c.1/
 
 ls /sys/class/udc > UDC
@@ -270,5 +280,3 @@ chmod 777 /dev/hidg0 # Keyboard
 chmod 777 /dev/hidg1 # Mouse Relative
 chmod 777 /dev/hidg2 # Mouse Absolute
 chmod 777 /dev/hidg3 # Touch
-
-service dnsmasq restart
